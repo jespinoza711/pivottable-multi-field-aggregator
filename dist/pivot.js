@@ -697,6 +697,36 @@
       rowKeys = pivotData.getRowKeys();
       colKeys = pivotData.getColKeys();
       result = $("<table class='table table-bordered pvtTable'>");
+
+      spanSize = function(arr, i, j) {
+        var len, noDraw, stop, x, _i, _j;
+        if (i !== 0) {
+          noDraw = true;
+          for (x = _i = 0; 0 <= j ? _i <= j : _i >= j; x = 0 <= j ? ++_i : --_i) {
+            if (arr[i - 1][x] !== arr[i][x]) {
+              noDraw = false;
+            }
+          }
+          if (noDraw) {
+            return -1;
+          }
+        }
+        len = 0;
+        while (i + len < arr.length) {
+          stop = false;
+          for (x = _j = 0; 0 <= j ? _j <= j : _j >= j; x = 0 <= j ? ++_j : --_j) {
+            if (arr[i][x] !== arr[i + len][x]) {
+              stop = true;
+            }
+          }
+          if (stop) {
+            break;
+          }
+          len++;
+        }
+        return len;
+      };
+
       for (j in colAttrs) {
         c = colAttrs[j];
         tr = $("<tr>");
@@ -761,7 +791,21 @@
         tr = $("<tr>");
         for (j in rowKey) {
           txt = rowKey[j];
-          th = $("<th class='pvtRowLabel'>").text(txt).attr("rowspan", 0);
+          console.log(rowKeys)
+          //th = $("<th class='pvtRowLabel'>").text(txt).attr("rowspan", 0);
+          x = spanSize(rowKeys, parseInt(i), parseInt(j));
+        
+          if (x !== -1) {
+            th = document.createElement("th");
+            th.className = "pvtRowLabel";
+            th.innerHTML = txt;
+            th.setAttribute("rowspan", x);
+            if (parseInt(j) === rowAttrs.length - 1 && colAttrs.length !== 0) {
+              th.setAttribute("colspan", 2);
+            }
+            //tr.appendChild(th);
+          }
+
           tr.append(th);
         }
         for (j in colKeys) {
@@ -1124,7 +1168,9 @@
           }
           return _results;
         });
-        uiTable = $("<table>").attr("cellpadding", 5);
+
+        uiTable = $("<table>").attr("cellpadding", 5).addClass("pvtUi");
+        
         rendererControl = $("<td>");
         renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControl).bind("change", function() {
           return refresh();
@@ -1240,6 +1286,7 @@
               left: e.pageX,
               top: e.pageY
             }).toggle();
+            console.log(e.pageX)
             valueList.find('.pvtSearch').val('');
             return valueList.find('.pvtCheckContainer p').show();
           };
